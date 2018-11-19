@@ -266,15 +266,17 @@ class TicTacToe(object):
         '''
         self.reset()
         while self.complete is False and self.number_of_moves != 9:
-            action = agent.select_action(
-                self.board, policy='search', board=self)
-            _, reward = self.move(action)
+            if self.first_player == 'o':
+                action = agent.select_action(
+                    self.board, policy='search', board=self)
+                _, reward = self.move(action)
 
-            if self.number_of_moves == 9 or self.complete is True:
-                break
+                if self.number_of_moves == 9 or self.complete is True:
+                    break
 
-            action = agent.select_action(self.board)
-            _, reward = self.move(action)
+            else:
+                action = agent.select_action(self.board)
+                _, reward = self.move(action)
 
         return reward
 
