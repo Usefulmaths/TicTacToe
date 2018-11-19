@@ -93,7 +93,7 @@ class Agent(object):
 
             # Choose the action that is most likely to win
             # against a random agent.
-            action = max(action_dict, key=action_dict.get)
+            action = min(action_dict, key=action_dict.get)
 
             return action
 
@@ -105,7 +105,7 @@ class TicTacToe(object):
 
     def __init__(self):
         self.board = np.zeros((3, 3)) + 5
-        self.player = 'x'
+        self.first_player = 'x' if np.random.choice(2) == 0 else 'o'
         self.complete = False
         self.number_of_moves = 0
 
@@ -113,7 +113,7 @@ class TicTacToe(object):
         '''
         Resets the state of the board to the beginning
         '''
-        self.player = 'x'
+        self.first_player = 'x' if np.random.choice(2) == 0 else 'o'
         self.board = np.zeros((3, 3)) + 5
         self.number_of_moves = 0
         self.complete = False
@@ -135,13 +135,13 @@ class TicTacToe(object):
             print("Invalid move, try again")
             return None, None
 
-        if self.player == 'o':
+        if self.first_player == 'o':
             piece = 0
-            self.player = 'x'
+            self.first_player = 'x'
 
-        elif self.player == 'x':
+        elif self.first_player == 'x':
             piece = 1
-            self.player = 'o'
+            self.first_player = 'o'
 
         self.board[i, j] = piece
         self.number_of_moves += 1
@@ -154,7 +154,7 @@ class TicTacToe(object):
     def rewards(self):
         '''
         Returns:
-                reward: the reward for being in a particular state of the board.
+               	reward: the reward for being in a particular state of the board.
         '''
         for i in range(3):
             # X wins verticals or horizontals
@@ -199,51 +199,56 @@ class TicTacToe(object):
         '''
         self.reset()
         print("GAME STARTED: Difficulty Level = %d" % agent.difficulty)
+
+        
         while self.complete is False and self.number_of_moves != 9:
-            action = agent.select_action(
-                self.board, policy='search', board=self)
-            print("Computer played position: %s" % str(tuple(action)))
-            _, reward = self.move(action)
-
-            print('\n')
-            print(self)
-            print('\n')
-
-            if self.number_of_moves == 9 or self.complete is True:
-                break
-
-            valid_move = False
-            while not valid_move:
-                print("Actions to choose from: [1 - 9]")
-                action = input("Enter a move: ")
-
-                if int(action) < 1 or int(action) > 9:
-                    print("Invalid action, try again!")
-                    continue
-
-                convert_action = {'1': '00', '2': '01', '3': '02', '4': '10',
-                                  '5': '11', '6': '12', '7': '20', '8': '21', '9': '22'}
-
-                action = convert_action[action]
-                action = tuple([int(a) for a in action])
-
-                print("You played position: %s" % str(action))
-
+            if self.first_player == 'o':
+                action = agent.select_action(
+                    self.board, policy='search', board=self)
+                print("Computer played position: %s" % str(tuple(action)))
                 _, reward = self.move(action)
 
-                if reward is None:
-                    valid_move = False
+                print('\n')
+                print(self)
+                print('\n')
 
-                else:
-                    valid_move = True
+                if self.number_of_moves == 9 or self.complete is True:
+                    break
 
-            print(self)
+
+            else:
+                valid_move = False
+                while not valid_move:
+                    print("Actions to choose from: [1 - 9]")
+                    action = input("Enter a move: ")
+
+                    if int(action) < 1 or int(action) > 9:
+                        print("Invalid action, try again!")
+                        continue
+
+                    convert_action = {'1': '00', '2': '01', '3': '02', '4': '10',
+                                      '5': '11', '6': '12', '7': '20', '8': '21', '9': '22'}
+
+                    action = convert_action[action]
+                    action = tuple([int(a) for a in action])
+
+                    print("You played position: %s" % str(action))
+
+                    _, reward = self.move(action)
+
+                    if reward is None:
+                        valid_move = False
+
+                    else:
+                        valid_move = True
+
+                print(self)
 
         if reward == 1:
-            print("You lose!")
+            print("You win!")
 
         elif reward == -1:
-            print("You win!")
+            print("You lose!")
 
         else:
             print("You draw!")
@@ -289,12 +294,12 @@ class TicTacToe(object):
         player_move = []
 
         while self.complete is False and self.number_of_moves != 9:
-            if self.player == 'x':
+            if self.first_player == 'o':
                 action = agent.select_action(self.board)
                 player_move.append(action)
                 _, reward = self.move(action)
 
-            elif self.player == 'o':
+            elif self.first_player == 'x':
                 action = agent.select_action(self.board)
                 _, reward = self.move(action)
 
@@ -312,8 +317,8 @@ class TicTacToe(object):
             '\n', '\n---------------------------------------------------\n')
 
         board = board.replace('5.', '|\t\t')
-        board = board.replace('0.', '|\tX\t')
-        board = board.replace('1.', '|\tO\t')
+        board = board.replace('0.', '|\tO\t')
+        board = board.replace('1.', '|\tX\t')
         board = board.replace('\t\n', '\t|\n')
         board = board + '|'
         return board
